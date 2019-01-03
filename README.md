@@ -9,7 +9,7 @@ const hostConfig = {
     getRootHostContext(...args) {
         console.log('getRootHostContext', ...args);
     },
-    appendChildToContainer(...args) {
+    appendChildToContainer(...args) { 
         console.log('appendChildToContainer', ...args);
     },
     prepareForCommit(...args) {
@@ -75,3 +75,9 @@ const hostConfig = {
 把now 修改成Date.now  记录成当前时间
 
 getRootHostContext 返回一个对象，里面返回一个对象，传递给子组件！。
+
+getChildHostContext 同样返回一个对象，向下传递
+
+shouldSetTextContent 返回boolean，返回真则开始createInstance，返回false则createTextInstance，
+
+finalizeInitialChildren 返回boolean，主要判断是否autofocus

@@ -1,5 +1,34 @@
 import Reconciler from 'react-reconciler';
 
+function insertTextNode(element, children) {
+    let textNode = document.createTextNode(children);
+    element.appendChild(textNode);
+}
+
+function insertDomNode(element, children) {
+    element.appendChild(children);
+}
+
+function insertNode(element, children) {
+    if (Array.isArray(children)) {
+        children.forEach(function (child) {
+            if (typeof child === 'string' || typeof child === 'number') {
+                insertTextNode(element, child)
+            } else {
+                console.log('child:', child);
+
+                insertDomNode(element, child)
+            }
+        });
+    } else {
+        if (children instanceof HTMLElement) {
+            insertDomNode(element, children)
+        } else {
+            insertTextNode(element, children)
+        }
+    }
+}
+
 const hostConfig = {
     getPublicInstance(...args) {
         console.log('getPublicInstance', ...args);
@@ -15,23 +44,56 @@ const hostConfig = {
             info: 'awesome'
         }
     },
-    appendChildToContainer(...args) {
-        console.log('appendChildToContainer', ...args);
+    appendChildToContainer(container, child) {
+        console.log('appendChildToContainer', [container,child]);
+        container.appendChild(child)
     },
-    prepareForCommit(...args) {
-        console.log('prepareForCommit', ...args)
+    // div#root
+    prepareForCommit(container) {
+        console.log('prepareForCommit', container);
     },
-    resetAfterCommit(...args) {
-        console.log('resetAfterCommit', ...args)
+    // div#root
+    resetAfterCommit(container) {
+        console.log('resetAfterCommit', container)
     },
-    createInstance(...args) {
-        console.log('createInstance', ...args)
+    /**
+     * 
+     * @param {*} type  fiber节点的nodename
+     * @param {*} newProps  当前dom实例的属性
+     * @param {*} rootContainerInstance 根节点DOM元素
+     * @param {*} currentHostContext   从父级getChildHostContext 获取的上下文
+     * @param {*} workInProgress  
+     * 
+     *  只需要返回dom元素即可
+     */
+    createInstance(type, newProps, rootContainerInstance, currentHostContext, workInProgress) {
+        const element = document.createElement(type);
+        for (const key in newProps) {
+            const val = newProps[key];
+            if (key === 'className') {
+                element.className = val
+            } else if (key === 'style') {
+                element.style = val
+            } else if (key.startsWith('on')) {
+                const eventType = key.slice(2).toLowerCase();
+                element.addEventListener(eventType, val);
+            } else if (typeof val === 'number' || typeof val === 'string') {
+                const textNode = document.createTextNode(val);
+                element.appendChild(textNode)
+            }
+        }
+        return element
     },
-    appendInitialChild(...args) {
-        console.log('appendInitialChild', ...args)
+    appendInitialChild(parentInstance, child) {
+        console.log('appendInitialChild', [parentInstance, child]);
+        parentInstance.appendChild(child);
     },
-    finalizeInitialChildren(...args) {
-        console.log('prepareUpdate', ...args)
+    prepareUpdate(...args) {
+        console.log('prepareUpdate', ...args);
+    },
+    finalizeInitialChildren(domElement, type, props, rootContainerInstance, hostContext) {
+        console.log('finalizeInitialChildren', [...arguments]);
+        return !!props.autoFocus
     },
     /**
      * 
@@ -40,7 +102,7 @@ const hostConfig = {
      */
     shouldSetTextContent(type, props) {
         console.log('shouldSetTextContent', [type, props]);
-        return typeof props.children === 'string' || 'number' 
+        return typeof props.children === 'string' || typeof props.children === 'number'
     },
     shouldDeprioritizeSubtree(...args) {
         console.log('shouldDeprioritizeSubtree', ...args);

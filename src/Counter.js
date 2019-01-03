@@ -1,19 +1,29 @@
 import React, { Component } from "react";
 
 export default class Counter extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            count: props.initialCount
-        }
+    state = {
+        count: 1
     }
-    render(){
+
+    increment = () => {
+        this.setState((state) => {
+            return { count: state.count + 1 }
+        })
+    }
+
+    decrement = () => {
+        this.setState((state) => {
+            return { count: state.count - 1 }
+        })
+    }
+
+    render() {
         const { count } = this.state;
         return (
             <div>
-                <button> - </button>
+                <button onClick={this.decrement}> - </button>
                 <span>{count}</span>
-                <button> + </button>
+                <button onClick={this.increment}> + </button>
             </div>
         )
     }
