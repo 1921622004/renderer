@@ -80,4 +80,25 @@ getChildHostContext 同样返回一个对象，向下传递
 
 shouldSetTextContent 返回boolean，返回真则开始createInstance，返回false则createTextInstance，
 
-finalizeInitialChildren 返回boolean，主要判断是否autofocus
+finalizeInitialChildren 返回boolean，主要判断是否autofocus   
+
+appendInitialChild  挂载DOM到父级dom上
+
+prepareForCommit  初次渲染时，已经构建好所有dom节点，马上就要挂在到div#root上了，react-dom中暂时禁止事件触发，我们就直接写一个空函数。 更新时即将准备更新DOM
+
+appendChildToContainer  就是将组件挂载到当前容器节点上  
+
+resetAfterCommit  此时已经将挂载完成，react-dom中解除事件的禁止，我们还是直接写空函数。  更新DOM后。
+
+prepareUpdate 
+```javascript
+var updatePayload = prepareUpdate(instance, type, oldProps, newProps, rootContainerInstance, currentHostContext);
+workInProgress.updateQueue = updatePayload;
+if (updatePayload) {
+    // 标记为待更新
+    markUpdate(workInProgress);
+}
+
+```
+
+commitUpdate   准备更新

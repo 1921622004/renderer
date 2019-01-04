@@ -45,10 +45,10 @@ const hostConfig = {
         }
     },
     appendChildToContainer(container, child) {
-        console.log('appendChildToContainer', [container,child]);
+        console.log('appendChildToContainer', [container, child]);
         container.appendChild(child)
     },
-    // div#root
+    // div#root 
     prepareForCommit(container) {
         console.log('prepareForCommit', container);
     },
@@ -88,8 +88,33 @@ const hostConfig = {
         console.log('appendInitialChild', [parentInstance, child]);
         parentInstance.appendChild(child);
     },
-    prepareUpdate(...args) {
-        console.log('prepareUpdate', ...args);
+    /**
+     * 
+     * @param domElement 当前dom节点
+     * @param type  当前dom节点nodetype
+     * @param oldProps  旧的属性
+     * @param newProps  新的属性
+     * @param rootContainerInstance  容器组件 
+     * @param hostContext  上下文
+     * @return  不需要更新 返回null | 更新则返回 Array 然后将当前的fiber节点标记为需要更新
+     * 
+     */
+    prepareUpdate(domElement, type, oldProps, newProps, rootContainerInstance, hostContext) {
+        console.log('prepareUpdate', [...arguments]);
+        let updatePayload = null;
+        for (const key in oldProps) {
+            const lastProp = oldProps[key];
+            const nextProp = newProps[key];
+            if (key === 'children') {
+                if (nextProp != lastProp && (typeof nextProp === 'number' || typeof nextProp === 'string')) {
+                    updatePayload = updatePayload || [];
+                    updatePayload.push(key, nextProp);
+                }
+            } else {
+                // 其余暂不考虑
+            }
+        };
+        return updatePayload
     },
     finalizeInitialChildren(domElement, type, props, rootContainerInstance, hostContext) {
         console.log('finalizeInitialChildren', [...arguments]);
@@ -141,6 +166,24 @@ const hostConfig = {
     },
     supportsHydration(...args) {
         console.log('supportsHydration', ...args);
+    },
+    removeChildFromContainer(...arg) {
+        console.log('removeChildFromContainer', ...arg);
+    },
+    /**
+     * @param domElement
+     */
+    commitUpdate(domElement, updatePayload, type, oldProps, newProps, internalInstanceHandle) {
+        for (var i = 0; i < updatePayload.length; i += 2) {
+            var propKey = updatePayload[i];
+            var propValue = updatePayload[i + 1];
+            if (propKey === 'style') {
+
+            } else if (propKey === 'children') {
+                domElement.textContent = propValue;
+            }
+        }
+        console.log('commitUpdate', [...arguments]);
     },
 };
 
