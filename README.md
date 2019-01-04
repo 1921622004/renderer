@@ -102,3 +102,17 @@ if (updatePayload) {
 ```
 
 commitUpdate   准备更新
+
+react
+暴露了几个方法，主要就是定义component，并不包含怎么处理更新的逻辑。
+
+react-dom （renderer）
+负责处理视图的更新
+
+reconciler
+16版本之后的react从stack reconciler重写为fiber reconciler，主要作用就是去进行diff算法，找出需要更新的节点。
+
+### 开始写
+先create-react-app建一个项目，然后安装react-reconciler，修改index.js文件，改为用我们自己写的renderer来渲染。
+
+先建立一个文件，就叫renderer吧，怎么写呢

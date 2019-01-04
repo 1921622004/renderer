@@ -1,34 +1,5 @@
 import Reconciler from 'react-reconciler';
 
-function insertTextNode(element, children) {
-    let textNode = document.createTextNode(children);
-    element.appendChild(textNode);
-}
-
-function insertDomNode(element, children) {
-    element.appendChild(children);
-}
-
-function insertNode(element, children) {
-    if (Array.isArray(children)) {
-        children.forEach(function (child) {
-            if (typeof child === 'string' || typeof child === 'number') {
-                insertTextNode(element, child)
-            } else {
-                console.log('child:', child);
-
-                insertDomNode(element, child)
-            }
-        });
-    } else {
-        if (children instanceof HTMLElement) {
-            insertDomNode(element, children)
-        } else {
-            insertTextNode(element, children)
-        }
-    }
-}
-
 const hostConfig = {
     getPublicInstance(...args) {
         console.log('getPublicInstance', ...args);
