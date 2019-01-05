@@ -1,9 +1,6 @@
 import Reconciler from 'react-reconciler';
 
 const hostConfig = {
-    getPublicInstance(...args) {
-        console.log('getPublicInstance', ...args);
-    },
     // 从上一层fiber节点获取上下文，并且向下一层传递
     getChildHostContext(parentHostContext, type, rootContainerInstance) {
         console.log('getChildHostContext', [parentHostContext, type, rootContainerInstance]);
@@ -28,7 +25,7 @@ const hostConfig = {
         console.log('resetAfterCommit', container)
     },
     /**
-     * 
+     *  
      * @param {*} type  fiber节点的nodename
      * @param {*} newProps  当前dom实例的属性
      * @param {*} rootContainerInstance 根节点DOM元素
@@ -38,6 +35,8 @@ const hostConfig = {
      *  只需要返回dom元素即可
      */
     createInstance(type, newProps, rootContainerInstance, currentHostContext, workInProgress) {
+        console.log('createInstance', [...arguments]);
+
         const element = document.createElement(type);
         for (const key in newProps) {
             const val = newProps[key];
@@ -48,9 +47,15 @@ const hostConfig = {
             } else if (key.startsWith('on')) {
                 const eventType = key.slice(2).toLowerCase();
                 element.addEventListener(eventType, val);
-            } else if (typeof val === 'number' || typeof val === 'string') {
-                const textNode = document.createTextNode(val);
-                element.appendChild(textNode)
+            } else if (key === 'children') {
+                if (typeof val === 'string' || typeof val === 'number') {
+                    const textNode = document.createTextNode(val);
+                    element.appendChild(textNode)
+                }
+            } else {
+                console.log(key,val,'==================');
+                
+                element.setAttribute(key, val)
             }
         }
         return element
@@ -100,47 +105,16 @@ const hostConfig = {
         console.log('shouldSetTextContent', [type, props]);
         return typeof props.children === 'string' || typeof props.children === 'number'
     },
-    shouldDeprioritizeSubtree(...args) {
-        console.log('shouldDeprioritizeSubtree', ...args);
+    commitMount(){
+        console.log('commitMount');
+        
     },
-    createTextInstance(...args) {
-        console.log('createTextInstance', ...args);
+    // 记录当前时间 
+    now() {
+        console.log('now');
+        return Date.now()
     },
-    scheduleDeferredCallback(...args) {
-        console.log('scheduleDeferredCallback', ...args);
-    },
-    cancelDeferredCallback(...args) {
-        console.log('cancelDeferredCallback', ...args);
-    },
-    shouldYield(...args) {
-        console.log('shouldYield', ...args);
-    },
-    scheduleTimeout(...args) {
-        console.log('scheduleTimeout', ...args);
-    },
-    cancelTimeout(...args) {
-        console.log('cancelTimeout', ...args);
-    },
-    noTimeout(...args) {
-        console.log('noTimeout', ...args);
-    },
-    // 记录当前时间
-    now: Date.now,
-    isPrimaryRenderer(...args) {
-        console.log('isPrimaryRenderer', ...args);
-    },
-    supportsMutation(...args) {
-        console.log('supportsMutation', ...args);
-    },
-    supportsPersistence(...args) {
-        console.log('supportsPersistence', ...args);
-    },
-    supportsHydration(...args) {
-        console.log('supportsHydration', ...args);
-    },
-    removeChildFromContainer(...arg) {
-        console.log('removeChildFromContainer', ...arg);
-    },
+    supportsMutation: true,
     /**
      * @param domElement
      */
@@ -162,7 +136,7 @@ const reconcilerInstance = Reconciler(hostConfig);
 
 export default {
     render(ele, containerDom, callback) {
-        const container = reconcilerInstance.createContainer(containerDom, false);
+        const container = reconcilerInstance.createContainer(containerDom, false, false);
         reconcilerInstance.updateContainer(
             ele,
             container,
@@ -171,5 +145,4 @@ export default {
         )
         console.log('render', [...arguments]);
     },
-
 }
