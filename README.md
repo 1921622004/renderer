@@ -314,4 +314,14 @@ finalizeInitialChildren(domElement, type, props, rootContainerInstance, hostCont
 },
 ```
 
-- **appendInitialChild** 这个就是用来将刚刚生成的节点挂载到上一层节点的
+- **appendInitialChild** 这个就是用来将刚刚生成的节点挂载到上一层节点的函数。
+```js
+/**
+ *  parentInstance 上一级节点
+ *  child 子节点
+ */ 
+appendInitialChild(parentInstance, child) {
+    console.log('appendInitialChild', [parentInstance, child]);
+    parentInstance.appendChild(child);
+}
+```
