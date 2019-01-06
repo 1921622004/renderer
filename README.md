@@ -103,14 +103,12 @@ if (updatePayload) {
 
 commitUpdate   准备更新
 
-react
-暴露了几个方法，主要就是定义component，并不包含怎么处理更新的逻辑。
 
-react-dom （renderer）
-负责处理视图的更新
-
-reconciler
-16版本之后的react从stack reconciler重写为fiber reconciler，主要作用就是去进行diff算法，找出需要更新的节点。
+## 简介
+今天我们学习的是怎么去写一个自己的renderer，也就是react的渲染器。开始之前，先来了解一下react的三个核心。
+- **react** 暴露了几个方法，主要就是定义component，并不包含怎么处理更新的逻辑。
+- **renderer**  负责处理视图的更新
+- **reconciler** 16版本之后的react从stack reconciler重写为fiber reconciler，主要作用就是去遍历节点，找出需要更新的节点，然后交由renderer去更新视图
 
 ### 开始写
 先create-react-app建一个项目，然后安装react-reconciler，修改index.js文件，改为用我们自己写的renderer来渲染。
@@ -197,13 +195,11 @@ const hostConfig = {
         console.log('isPrimaryRenderer', ...args);
     },
     supportsMutation:true,
-    supportsPersistence:true,
-    supportsHydration:true,
 }
 ```
 然后我们修改App.js文件，简单的写一个计数器，大致如下：
 ```javascript
-class Counter extends Component {
+class App extends Component {
     state = {
         count: 1
     }
@@ -234,7 +230,6 @@ class Counter extends Component {
 ```
 
 打开浏览器看一下发现并没有渲染出任何东西，打开console，这些函数的调用顺序如下图，好的，那我们开始写这些函数：
-【】
 
 - **now** 这个函数是用来返回当前时间的，所以我们就写成Date.now 就可以了。
 - **getRootHostContext** 这个函数可以向下一级节点传递信息，所以我们就简单的返回一个空对象。
@@ -325,3 +320,88 @@ appendInitialChild(parentInstance, child) {
     parentInstance.appendChild(child);
 }
 ```
+
+- **prepareForCommit** 这个函数调用的时候，我们的dom节点已经生成了，即将挂载到根节点上，在这里需要做一些准备工作，比如说禁止事件的触发，统计需要autofocus的节点。我们就不需要了，直接写一个空函数就可以了。
+```js
+// rootContainerInstance 根节点
+prepareFomCommit(rootContainerInstance){
+
+}
+```
+
+- **appendChildToContainer** 这个就是将生成的节点插入根节点的函数了。
+```js
+// container 我们的根节点
+// child  已经生成的节点
+appendChildToContainer(container, child){
+    container.appendChild(child)
+}
+```
+
+- **resetAfterCommit** 这个函数会在已经将真实的节点挂载后触发，所以我们还是写一个空函数。
+```js
+resetAfterCommit(){
+
+}
+```
+
+好了，现在我们的初次渲染已经大功告成了。接下来是更新。
+
+### 更新
+- **prepareUpdate** 这个函数用来统计怎么更新，返回一个数组代表需要更新，如果不需要更新就返回null。然后返回的数组会返回给当前dom节点对应的fiber节点，赋予fiber节点的updateQueue，同时将当前fiber节点标记成待更新状态。
+```js
+/**
+ * domElement  当前遍历的dom节点
+ * type         nodeType
+ * oldProps    旧的属性
+ * newProps    新属性
+ * rootContainerInstance  根节点
+ * hostContext 从上一级节点传递下来的上下文
+ */ 
+prepareUpdate(domElement, type, oldProps, newProps, rootContainerInstance, hostContext) {
+    console.log('prepareUpdate', [...arguments]);
+    let updatePayload = null;
+    for (const key in oldProps) {
+        const lastProp = oldProps[key];
+        const nextProp = newProps[key];
+        if (key === 'children') {
+            if (nextProp != lastProp && (typeof nextProp === 'number' || typeof nextProp === 'string')) {
+                updatePayload = updatePayload || [];
+                updatePayload.push(key, nextProp);
+            }
+        } else {
+            // 其余暂不考虑
+        }
+    };
+    return updatePayload
+}
+```
+
+- **commitUpdate** 这个函数就是已经遍历完成，准备更新了。
+```js
+/**
+ * domElement  对应的dom节点
+ * updatePayload  我们刚才决定返回的更新
+ * type        nodeType
+ * oldProps    旧的属性
+ * newProps    新属性
+ * internalInstanceHandle  当前dom节点对应的fiber节点
+ */ 
+commitUpdate(domElement, updatePayload, type, oldProps, newProps, internalInstanceHandle) {
+    for (var i = 0; i < updatePayload.length; i += 2) {
+        var propKey = updatePayload[i];
+        var propValue = updatePayload[i + 1];
+        if (propKey === 'style') {
+
+        } else if (propKey === 'children') {
+            domElement.textContent = propValue;
+            // 其余情况暂不考虑
+        } else {
+
+        }
+    }
+},
+```
+
+woola！更新也完成了。
+

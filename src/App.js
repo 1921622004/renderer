@@ -20,12 +20,11 @@ class App extends Component {
 
   render() {
       const { count } = this.state;
-      return (
+      return ( 
           <div>
               <button onClick={this.decrement}> - </button>
               <span>{count}</span>
               <button onClick={this.increment}> + </button>
-              <input type="text" autoFocus value="11"/>
           </div>
       )
   }
